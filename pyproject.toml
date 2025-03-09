@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "programmers-task"
+version = "0.1.0"
+description = ""
+authors = ["dale <homelala@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+flask = "1.1.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
