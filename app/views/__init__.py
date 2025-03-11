@@ -43,9 +43,8 @@ def handle_unprocessable_entity(e):
 def register_error_handlers(app):
     app.register_error_handler(ApiError, handle_api_error)
     app.register_error_handler(422, handle_unprocessable_entity)
-    app.register_error_handler(ApiError, handle_not_found)
 
 def register_api(app):
-    ReservationView.register(app, route_base="/reservation", trailing_slash=False)
+    ReservationView.register(app, route_base="/test_reservation.py", trailing_slash=False)
 
     register_error_handlers(app)

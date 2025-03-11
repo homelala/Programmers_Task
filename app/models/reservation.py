@@ -10,4 +10,4 @@ class Reservation(db.Model):
     user_count = db.Column(db.Integer, nullable=False)
     start_datetime = db.Column(db.DateTime, nullable=False)
     end_datetime = db.Column(db.DateTime, nullable=False)
-    is_comfirmed = db.Column(db.Boolean, default=False)
+    is_confirmed = db.Column(db.Boolean, default=False)
