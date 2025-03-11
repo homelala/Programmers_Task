@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pytest
 from flask import url_for
@@ -20,8 +20,8 @@ class Describe_ReservationView:
             return {
                 "user_id": user.id,
                 "user_count": 30000,
-                "start_datetime": "2021-01-01 00:00",
-                "end_datetime": "2021-01-01 01:00",
+                "start_datetime": (datetime.utcnow() + timedelta(days=3)).isoformat(),
+                "end_datetime": (datetime.utcnow() + timedelta(days=3, hours=3)).isoformat(),
             }
 
         @pytest.fixture
@@ -29,34 +29,52 @@ class Describe_ReservationView:
             url = url_for("ReservationView:reserve")
             return client.post(url, data=json.dumps(form), headers=headers)
 
-        def test_예약하기(self, subject):
+        def test_예약하기(self, subject, form):
             assert subject.status_code == 200
 
             reservations = Reservation.query.all()
             assert len(reservations) == 1
-            assert reservations[0].user_id == 1
-            assert reservations[0].user_count == 30000
-            assert reservations[0].start_datetime == datetime.strptime("2021-01-01 00:00", "%Y-%m-%d %H:%M")
-            assert reservations[0].end_datetime == datetime.strptime("2021-01-01 01:00", "%Y-%m-%d %H:%M")
+            assert reservations[0].user_id == form["user_id"]
+            assert reservations[0].user_count == form["user_count"]
+            assert reservations[0].start_datetime == datetime.fromisoformat(form["start_datetime"])
+            assert reservations[0].end_datetime == datetime.fromisoformat(form["end_datetime"])
+
+        class Context_시험전날에_예약하는_경우:
+            @pytest.fixture
+            def form(self):
+                return {
+                    "user_id": 1,
+                    "user_count": 30000,
+                    "start_datetime": (datetime.utcnow() - timedelta(days=1)).isoformat(),
+                    "end_datetime": (datetime.utcnow() + timedelta(hours=3)).isoformat(),
+                }
+
+            def test_return_422(self, subject):
+                assert subject.status_code == 422
 
         class Context_예약가능인원_초과로_예약할_경우:
             @pytest.fixture
             def form(self):
-                return {"user_id": 1, "user_count": 50001, "start_datetime": "2021-01-01 00:00", "end_datetime": "2021-01-01 01:00"}
+                return {
+                    "user_id": 1,
+                    "user_count": 50001,
+                    "start_datetime": (datetime.utcnow() + timedelta(days=3)).isoformat(),
+                    "end_datetime": (datetime.utcnow() + timedelta(days=3, hours=3)).isoformat(),
+                }
 
-            def test_예약가능인원_초과(self, subject):
+            def test_return_422(self, subject):
                 assert subject.status_code == 422
 
         class Context_이미예약된_인원으로인해_초과된경우:
             @pytest.fixture
-            def already_reserved(self, user, form):
+            def already_reserved(self, user):
                 return ReservationFactory.create(
                     user_id=user.id,
                     user_count=30000,
-                    start_datetime=datetime.strptime(form["start_datetime"], "%Y-%m-%d %H:%M"),
-                    end_datetime=datetime.strptime(form["end_datetime"], "%Y-%m-%d %H:%M"),
+                    start_datetime=(datetime.utcnow() + timedelta(days=3)).isoformat(),
+                    end_datetime=(datetime.utcnow() + timedelta(days=3, hours=3)).isoformat(),
                     is_confirmed=True,
                 )
 
-            def test_이미예약된_인원으로인해_초과(self, already_reserved, subject):
+            def test_return_400(self, already_reserved, subject):
                 assert subject.status_code == 400
