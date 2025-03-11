@@ -10,6 +10,39 @@ from app.models.reservation import Reservation
 
 
 class Describe_ReservationView:
+    class Context_get_reserved_list:
+        @pytest.fixture
+        def reservations(self, user):
+            return ReservationFactory.create_batch(3, user_id=user.id, user_count=10000)
+
+        @pytest.fixture
+        def user(self):
+            return UserFactory.create()
+
+        @pytest.fixture
+        def subject(self, reservations, client, headers, user):
+            url = url_for("ReservationView:get_reserved_list")
+            return client.get(url, headers=headers, query_string={"user_id": user.id})
+
+        def test_예약목록조회(self, subject, user, reservations):
+            assert subject.status_code == 200
+            assert len(subject.json) == len(reservations)
+
+        class Context_어드민계졍인_경우:
+            @pytest.fixture
+            def admin_user(self):
+                return UserFactory.create(is_admin=True)
+
+            @pytest.fixture
+            def subject(self, reservations, client, headers, admin_user):
+                url = url_for("ReservationView:get_reserved_list")
+                return client.get(url, headers=headers, query_string={"user_id": admin_user.id})
+
+            def test_예약목록조회(self, subject, reservations):
+                assert subject.status_code == 200
+                assert len(subject.json) == len(reservations)
+
+
     class Context_reserve:
         @pytest.fixture
         def user(self):

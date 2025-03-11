@@ -1,10 +1,12 @@
-from unittest import mock
 import psycopg2
 import pytest
 from app import create_app
 from app.config import TestConfig
 from app.database import db
 
+
+import psycopg2
+import pytest
 
 @pytest.fixture(scope="session")
 def test_database():
@@ -14,20 +16,37 @@ def test_database():
     conn.autocommit = True
     cursor = conn.cursor()
 
+    cursor.execute(
+        """
+        SELECT pg_terminate_backend(pg_stat_activity.pid)
+        FROM pg_stat_activity
+        WHERE pg_stat_activity.datname = 'test_db' AND pid <> pg_backend_pid();
+        """
+    )
     cursor.execute("DROP DATABASE IF EXISTS test_db;")
+
     cursor.execute("CREATE DATABASE test_db;")
 
     cursor.close()
     conn.close()
 
-    yield "test_db"  # 테스트가 실행될 동안 유지
+    yield "test_db"  # 테스트 실행 동안 유지
 
     conn = psycopg2.connect(
         dbname="postgres", user="programmers", password="programmers1234!", host="localhost", port="5432"
     )
     conn.autocommit = True
     cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT pg_terminate_backend(pg_stat_activity.pid)
+        FROM pg_stat_activity
+        WHERE pg_stat_activity.datname = 'test_db' AND pid <> pg_backend_pid();
+        """
+    )
     cursor.execute("DROP DATABASE IF EXISTS test_db;")
+
     cursor.close()
     conn.close()
 

@@ -15,3 +15,14 @@ class ReservationSchema(Schema):
 
         if value.date() < min_date:
             raise ValidationError(f"시험 시작 시간은 {min_date} 이후여야 합니다.")
+
+class ReservationListSchema(Schema):
+    id = fields.Int(description="예약 아이디")
+    user_id = fields.Int(description="고객 아이디")
+    user_count = fields.Int(description="유저 수")
+    start_datetime = fields.DateTime(description="시험 시작 시간")
+    end_datetime = fields.DateTime(description="시험 종료 시간")
+    is_confirmed = fields.Bool(description="확정 여부")
+
+class ReservationUserSchema(Schema):
+    user_id = fields.Integer(description="고객 아이디")
