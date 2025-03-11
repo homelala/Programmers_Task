@@ -7,7 +7,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-flask = "1.1.4"
+flask = "2.2.3"
+flask-classful = "0.16.0"
+flask-apispec = "0.11.4"
+inflection = "0.3.1"
+flask-sqlalchemy = "^3.1.1"
+psycopg2 = "^2.9.10"
+funcy = "1.18"
 
 
 [build-system]
