@@ -45,7 +45,7 @@ postgres -V
 postgres --version
 ```
 
-1. psql 실행
+2. psql 실행
 
 ```bash
 # postgresql 실행 명령어
@@ -55,13 +55,13 @@ brew services start postgresql
 brew services stop postgresql
 ```
 
-2. Role 생성 (role과 pw 지켜야함)
+3. Role 생성 (role과 pw 지켜야함)
 
 ```bash
 CREATE ROLE programmers WITH LOGIN PASSWORD 'programmers1234!';
 ```
 
-3. DB 생성 (이름 및 owner 이름 지켜야함)
+4. DB 생성 (이름 및 owner 이름 지켜야함)
 
 ```bash
 CREATE DATABASE programmersdb OWNER programmers;
