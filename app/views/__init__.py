@@ -1,16 +1,16 @@
-import traceback
+from flask_swagger_ui import get_swaggerui_blueprint
 from funcy import first
-from flask import jsonify
+from flask import jsonify, Blueprint
 from flask_apispec import marshal_with
 
 from app.error import ApiError
 from app.serializers.error import ApiErrorSchema
+from app.utils.apidocs import generate_api_spec
 from app.views.reservation import ReservationView
 
 
 @marshal_with(ApiErrorSchema())
 def handle_api_error(e: ApiError):
-    traceback.print_exc()
     return e, e.status_code
 
 
@@ -38,8 +38,6 @@ def handle_unprocessable_entity(e):
     errors = make_field_to_str(e.data["messages"])
     message = find_message(None, errors)
 
-    traceback.print_exc()
-
     return jsonify({"code": 422, "message": message, "errors": errors}), e.code
 
 
@@ -52,3 +50,21 @@ def register_api(app):
     ReservationView.register(app, route_base="/reservation", trailing_slash=False)
 
     register_error_handlers(app)
+    register_apidocs(app, title="Programmers Task API")
+
+
+def register_apidocs(app, title="Programmers Task API", version="v1"):
+    def get_api_spec_url():
+        return "/apispec"
+    @app.route("/apispec")
+    def apispec():
+        return jsonify(generate_api_spec(title=title, version=version, app_name=app.name if isinstance(app, Blueprint) else None))
+
+    # Swagger UI 블루프린트 추가
+    SWAGGER_URL = "/swagger"
+    API_URL = get_api_spec_url()
+
+    swagger_ui_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL, API_URL, config={"app_name": title}
+    )
+    app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
