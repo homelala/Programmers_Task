@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from marshmallow import Schema, fields, validate, validates, ValidationError
+from marshmallow import Schema, fields, validate, validates, ValidationError, validates_schema
 
 
 class ReservationSchema(Schema):
@@ -15,6 +15,15 @@ class ReservationSchema(Schema):
 
         if value.date() < min_date:
             raise ValidationError(f"시험 시작 시간은 {min_date} 이후여야 합니다.")
+
+    @validates_schema
+    def validate_end_datetime(self, data, **kwargs):
+        start = data.get("start_datetime")
+        end = data.get("end_datetime")
+
+        if end < start + timedelta(hours=1):
+            raise ValidationError("시험 종료 시간(end_datetime)은 시험 시작 시간(start_datetime)보다 최소 1시간 이후여야 합니다.", field_name="end_datetime")
+
 
 class ReservationListSchema(Schema):
     id = fields.Int(description="예약 아이디")

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, and_
+from sqlalchemy import func
 
 from app.database import db
 from app.error import ApiError
@@ -11,7 +11,7 @@ from app.models.user import User
 class ReservationService:
     @classmethod
     def _check_create_reservation(cls, start_time, end_time):
-        reservation_user_count = Reservation.live_objects(Reservation.start_datetime <= end_time, Reservation.end_datetime >= start_time, Reservation.is_confirmed == True).with_entities(func.sum(Reservation.user_count)).scalar() or 0
+        reservation_user_count = Reservation.live_objects(Reservation.start_datetime < end_time, Reservation.end_datetime > start_time, Reservation.is_confirmed == True).with_entities(func.sum(Reservation.user_count)).scalar() or 0
         return reservation_user_count
 
     @classmethod
@@ -65,7 +65,7 @@ class ReservationService:
     @classmethod
     def confirm_reservation(cls, user_id, reservation_id):
         user = User.query.get_or_404(user_id)
-        reservation = Reservation.live_objects(Reservation.id==reservation_id).first_or_404()
+        reservation = Reservation.live_objects(Reservation.id == reservation_id).first_or_404()
 
         if user.is_admin or reservation.user_id == user.id:
             reservation.is_confirmed = True
@@ -78,10 +78,27 @@ class ReservationService:
         user = User.query.get_or_404(user_id)
         reservation = Reservation.live_objects(Reservation.id == reservation_id).first()
         if reservation.is_confirmed:
-            raise ApiError("예약 확정된 예약은 삭제할 수 없습니다.", status_code=400)
+            raise ApiError("예약 확정된 예약은 삭제할 수 없습니다.", status_code=401)
 
         if user.is_admin or reservation.user_id == user.id:
             reservation.deleted()
             db.session.commit()
         elif reservation.user_id != user.id:
+            raise ApiError("예약 권한이 없습니다.", status_code=403)
+
+    @classmethod
+    def update_reservation(cls, reservation_id, user_id, user_count, start_datetime, end_datetime):
+        reservation = Reservation.live_objects(Reservation.id == reservation_id).first_or_404()
+        if reservation.is_confirmed:
+            raise ApiError("예약 확정된 예약은 수정할 수 없습니다.", status_code=401)
+
+        if reservation.user_id == user_id:
+            if cls._check_create_reservation(start_datetime, end_datetime) + user_count > 50000:
+                raise ApiError("예약 가능 인원이 부족합니다.", status_code=400)
+
+            reservation.user_count = user_count
+            reservation.start_datetime = start_datetime
+            reservation.end_datetime = end_datetime
+            db.session.commit()
+        else:
             raise ApiError("예약 권한이 없습니다.", status_code=403)

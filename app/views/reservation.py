@@ -46,7 +46,7 @@ class ReservationView(FlaskView):
 
     @doc(summary="예약 삭제")
     @route("/<user_id>/<reservation_id>", methods=["DELETE"])
-    @marshal_with(ApiErrorSchema, code=400, description="예약 확정된 예약은 삭제할 수 없습니다.")
+    @marshal_with(ApiErrorSchema, code=401, description="예약 확정된 예약은 삭제할 수 없습니다.")
     @marshal_empty(code=200)
     def delete(self, user_id, reservation_id):
         ReservationService.delete_reservation(user_id, reservation_id)

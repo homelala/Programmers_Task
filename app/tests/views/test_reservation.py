@@ -209,7 +209,7 @@ class Describe_ReservationView:
                 return ReservationFactory.create(user_id=UserFactory.create().id, user_count=30000, is_confirmed=True)
 
             def test_return_400(self, reservation, subject):
-                assert subject.status_code == 400
+                assert subject.status_code == 401
 
         class Context_admin계정이_삭제하려고할_경우:
             @pytest.fixture
