@@ -32,3 +32,37 @@ poetry show
 3. cmd + ,를 눌러 Interpreter에서 아래 사진과 같이 의존성이 설치되면 성공
 
 ![Image](https://github.com/user-attachments/assets/0c74ad50-4d6b-415a-b070-39b2a41ed756)
+
+
+# 3. Database 설정
+1. 우선 psql을 설치
+
+```bash
+brew install postgresql
+
+# 아래의 2개의 명령어중 1개를 입력해서 확인한다.
+postgres -V 
+postgres --version
+```
+
+1. psql 실행
+
+```bash
+# postgresql 실행 명령어
+brew services start postgresql 
+
+# postgresql 종료 명령어
+brew services stop postgresql
+```
+
+2. Role 생성 (role과 pw 지켜야함)
+
+```bash
+CREATE ROLE programmers WITH LOGIN PASSWORD 'programmers1234!';
+```
+
+3. DB 생성 (이름 및 owner 이름 지켜야함)
+
+```bash
+CREATE DATABASE programmersdb OWNER programmers;
+```
