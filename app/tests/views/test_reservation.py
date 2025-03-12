@@ -188,3 +188,52 @@ class Describe_ReservationView:
 
             def test_return_403(self, subject):
                 assert subject.status_code == 403
+
+    class Context_delete:
+        @pytest.fixture
+        def reservation(self):
+            return ReservationFactory.create(user_id=UserFactory.create().id, user_count=30000)
+
+        @pytest.fixture
+        def subject(self, reservation, client, headers):
+            url = url_for("ReservationView:delete", user_id=reservation.user_id, reservation_id=reservation.id)
+            return client.delete(url, headers=headers)
+
+        def test_예약삭제(self, subject, reservation):
+            assert subject.status_code == 200
+            assert reservation.deleted_at is not None
+
+        class Context_이미확정된_예약일_경우:
+            @pytest.fixture
+            def reservation(self):
+                return ReservationFactory.create(user_id=UserFactory.create().id, user_count=30000, is_confirmed=True)
+
+            def test_return_400(self, reservation, subject):
+                assert subject.status_code == 400
+
+        class Context_admin계정이_삭제하려고할_경우:
+            @pytest.fixture
+            def admin_user(self):
+                return UserFactory.create(is_admin=True)
+
+            @pytest.fixture
+            def subject(self, client, headers, reservation, admin_user):
+                url = url_for("ReservationView:delete", user_id=admin_user.id, reservation_id=reservation.id)
+                return client.delete(url, headers=headers)
+
+            def test_예약삭제(self, subject, reservation):
+                assert subject.status_code == 200
+                assert reservation.deleted_at is not None
+
+        class Context_타계정이_삭제하려고할_경우:
+            @pytest.fixture
+            def other_user(self):
+                return UserFactory.create()
+
+            @pytest.fixture
+            def subject(self, client, headers, reservation, other_user):
+                url = url_for("ReservationView:delete", user_id=other_user.id, reservation_id=reservation.id)
+                return client.delete(url, headers=headers)
+
+            def test_return_403(self, subject):
+                assert subject.status_code == 403

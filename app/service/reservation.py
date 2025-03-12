@@ -10,13 +10,13 @@ from app.models.user import User
 
 class ReservationService:
     @classmethod
-    def _check_create_reservatioin(cls, start_time, end_time):
-        reservation_user_count = Reservation.query.with_entities(func.sum(Reservation.user_count)).filter(and_(Reservation.start_datetime <= end_time, Reservation.end_datetime >= start_time, Reservation.is_confirmed == True)).scalar() or 0
+    def _check_create_reservation(cls, start_time, end_time):
+        reservation_user_count = Reservation.live_objects(Reservation.start_datetime <= end_time, Reservation.end_datetime >= start_time, Reservation.is_confirmed == True).with_entities(func.sum(Reservation.user_count)).scalar() or 0
         return reservation_user_count
 
     @classmethod
     def create_reservation(cls, user_id, user_count, start_datetime, end_datetime):
-        if cls._check_create_reservatioin(start_datetime, end_datetime) + user_count > 50000:
+        if cls._check_create_reservation(start_datetime, end_datetime) + user_count > 50000:
             raise ApiError("예약 가능 인원이 부족합니다.", status_code=400)
 
         reservation = Reservation(user_id=user_id, user_count=user_count, start_datetime=start_datetime, end_datetime=end_datetime)
@@ -28,14 +28,14 @@ class ReservationService:
         user = User.query.filter(User.id == user_id).first()
 
         if user.is_admin:
-            return Reservation.query.all()
+            return Reservation.live_objects().all()
 
-        return Reservation.query.filter(Reservation.user_id == user_id).all()
+        return Reservation.live_objects(Reservation.user_id == user_id).all()
 
     @classmethod
     def get_available_schedule(cls):
         date_list = cls._get_date_dict()
-        reservations = Reservation.query.filter(Reservation.start_datetime >= datetime.utcnow(), Reservation.is_confirmed==True).all()
+        reservations = Reservation.live_objects(Reservation.start_datetime >= datetime.utcnow(), Reservation.is_confirmed == True).all()
 
         for res in reservations:
             start_time = res.start_datetime.replace(minute=0, second=0, microsecond=0)  # 시간 단위로 맞춤
@@ -64,15 +64,24 @@ class ReservationService:
 
     @classmethod
     def confirm_reservation(cls, user_id, reservation_id):
-        user = User.query.get(user_id)
-        reservation = Reservation.query.get(reservation_id)
+        user = User.query.get_or_404(user_id)
+        reservation = Reservation.live_objects(Reservation.id==reservation_id).first_or_404()
 
-        if user.is_admin:
+        if user.is_admin or reservation.user_id == user.id:
             reservation.is_confirmed = True
             db.session.commit()
         elif reservation.user_id != user.id:
             raise ApiError("예약 권한이 없습니다.", status_code=403)
-        else:
-            reservation = Reservation.query.get(reservation_id)
-            reservation.is_confirmed = True
+
+    @classmethod
+    def delete_reservation(cls, user_id, reservation_id):
+        user = User.query.get_or_404(user_id)
+        reservation = Reservation.live_objects(Reservation.id == reservation_id).first()
+        if reservation.is_confirmed:
+            raise ApiError("예약 확정된 예약은 삭제할 수 없습니다.", status_code=400)
+
+        if user.is_admin or reservation.user_id == user.id:
+            reservation.deleted()
             db.session.commit()
+        elif reservation.user_id != user.id:
+            raise ApiError("예약 권한이 없습니다.", status_code=403)
