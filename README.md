@@ -21,7 +21,7 @@ poetry install
 poetry --version
 ```
 
-1. 의존성 설치
+2. 의존성 설치
 
 ```bash
 poetry install
@@ -29,6 +29,6 @@ poetry install
 poetry show
 ```
 
-1. cmd + ,를 눌러 Interpreter에서 아래 사진과 같이 의존성이 설치되면 성공
+3. cmd + ,를 눌러 Interpreter에서 아래 사진과 같이 의존성이 설치되면 성공
 
 ![Image](https://github.com/user-attachments/assets/0c74ad50-4d6b-415a-b070-39b2a41ed756)
