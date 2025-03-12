@@ -26,3 +26,9 @@ class ReservationListSchema(Schema):
 
 class ReservationUserSchema(Schema):
     user_id = fields.Integer(description="고객 아이디")
+
+
+class AvailableReservationSchema(Schema):
+    datetime = fields.DateTime(description="예약 가능 시간")
+    user_count = fields.Integer(description="예약 가능 인원")
+    status = fields.String(description="예약 가능 여부")

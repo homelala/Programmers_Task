@@ -42,7 +42,6 @@ class Describe_ReservationView:
                 assert subject.status_code == 200
                 assert len(subject.json) == len(reservations)
 
-
     class Context_reserve:
         @pytest.fixture
         def user(self):
@@ -111,3 +110,40 @@ class Describe_ReservationView:
 
             def test_return_400(self, already_reserved, subject):
                 assert subject.status_code == 400
+
+    class Context_get_available_schedule:
+        @pytest.fixture
+        def subject(self, client, headers):
+            url = url_for("ReservationView:get_available_schedule")
+            return client.get(url, headers=headers)
+
+        def test_return_data(self, subject):
+            assert subject.status_code == 200
+
+            data = subject.json
+            assert len(data) == 3 * 24
+
+            for entry in data:
+                assert datetime.strptime(entry["datetime"], "%Y-%m-%dT%H:%M:%S") >= (datetime.utcnow() + timedelta(days=3)).replace(hour=0, minute=0, second=0, microsecond=0)
+                assert entry["user_count"] == 50000
+                assert entry["status"] == "가능"
+
+        class Context_5만명이상_신청된_예약이_있을_경우:
+            @pytest.fixture
+            def reserved(self):
+                return ReservationFactory.create(user_id= UserFactory.create().id, user_count=50000, start_datetime=(datetime.utcnow() + timedelta(days=3)).replace(hour=1, minute=00, second=0, microsecond=0), end_datetime=(datetime.utcnow() + timedelta(days=3)).replace(hour=3, minute=00, second=0, microsecond=0), is_confirmed=True)
+
+            def test_return_data(self, reserved, subject):
+                assert subject.status_code == 200
+
+                data = subject.json
+                assert len(data) == 3 * 24
+
+                for entry in data:
+                    if reserved.start_datetime <= datetime.strptime(entry["datetime"], "%Y-%m-%dT%H:%M:%S") < reserved.end_datetime:
+                        assert entry["user_count"] == 0
+                        assert entry["status"] == "마감"
+                    else:
+                        assert datetime.strptime(entry["datetime"], "%Y-%m-%dT%H:%M:%S") >= (datetime.utcnow() + timedelta(days=3)).replace(hour=0, minute=0, second=0, microsecond=0)
+                        assert entry["user_count"] == 50000
+                        assert entry["status"] == "가능"
