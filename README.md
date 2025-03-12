@@ -9,7 +9,7 @@ local 실행 후 localhost:port/swagger/ 접속하면 확인 가능
 
 ### 📌 1. 실행 configuration 설정
 
-아래와 같이 configuration을 설정한다. (port 번호는 자유롭게 설정해도 된다)
+아래와 같이 configuration을 설정한다. (port 번호는 자유롭게 설정해도 된다, dir path 수정 필요!)
 
 ![Image](https://github.com/user-attachments/assets/40c01d53-0b67-4691-9724-7d43ef1fade4)
 
