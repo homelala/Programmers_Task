@@ -1,19 +1,19 @@
 # Programmers_Task
-# API 문서
+# 📃API 문서
 local 실행 후 localhost:port/swagger/ 접속하면 확인 가능
 
 
-# 개발환경 설정
+# ⚙️개발환경 설정
 
 ## 로컬 환경설정
 
-### 1. 실행 configuration 설정
+### 📌 1. 실행 configuration 설정
 
 아래와 같이 configuration을 설정한다. (port 번호는 자유롭게 설정해도 된다)
 
 ![Image](https://github.com/user-attachments/assets/40c01d53-0b67-4691-9724-7d43ef1fade4)
 
-## 2. Poetry 설치
+## 📌 2. Poetry 설치
 
 1. 우선 poetry를 설치한다
 
@@ -37,7 +37,7 @@ poetry show
 ![Image](https://github.com/user-attachments/assets/0c74ad50-4d6b-415a-b070-39b2a41ed756)
 
 
-# 3. Database 설정
+# 📌 3. Database 설정
 1. 우선 psql을 설치
 
 ```bash
@@ -85,5 +85,5 @@ psql -U programmers -d programmersdb
 ```
 
 
-# 4. 기타 추가 설정
+# 📌 4. 기타 추가 설정
 **test 및 로컬에서 api를 실행하려고 할 때에는 1번에서 나왔던 brew services start postgresql를 실행시켜야 동작한다**
