@@ -6,7 +6,7 @@
 
 ### 1. 실행 configuration 설정
 
-아래와 같이 configuration을 설정한다.
+아래와 같이 configuration을 설정한다. (port 번호는 자유롭게 설정해도 된다)
 
 ![Image](https://github.com/user-attachments/assets/40c01d53-0b67-4691-9724-7d43ef1fade4)
 
