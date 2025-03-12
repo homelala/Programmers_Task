@@ -130,20 +130,61 @@ class Describe_ReservationView:
 
         class Context_5만명이상_신청된_예약이_있을_경우:
             @pytest.fixture
-            def reserved(self):
+            def reservation(self):
                 return ReservationFactory.create(user_id= UserFactory.create().id, user_count=50000, start_datetime=(datetime.utcnow() + timedelta(days=3)).replace(hour=1, minute=00, second=0, microsecond=0), end_datetime=(datetime.utcnow() + timedelta(days=3)).replace(hour=3, minute=00, second=0, microsecond=0), is_confirmed=True)
 
-            def test_return_data(self, reserved, subject):
+            def test_return_data(self, reservation, subject):
                 assert subject.status_code == 200
 
                 data = subject.json
                 assert len(data) == 3 * 24
 
                 for entry in data:
-                    if reserved.start_datetime <= datetime.strptime(entry["datetime"], "%Y-%m-%dT%H:%M:%S") < reserved.end_datetime:
+                    if reservation.start_datetime <= datetime.strptime(entry["datetime"], "%Y-%m-%dT%H:%M:%S") < reservation.end_datetime:
                         assert entry["user_count"] == 0
                         assert entry["status"] == "마감"
                     else:
                         assert datetime.strptime(entry["datetime"], "%Y-%m-%dT%H:%M:%S") >= (datetime.utcnow() + timedelta(days=3)).replace(hour=0, minute=0, second=0, microsecond=0)
                         assert entry["user_count"] == 50000
                         assert entry["status"] == "가능"
+
+    class Context_confirm_reservation:
+        @pytest.fixture
+        def reservation(self):
+            return ReservationFactory.create(user_id=UserFactory.create().id, user_count=30000, is_confirmed=False)
+
+        @pytest.fixture
+        def subject(self, reservation, client, headers):
+            url = url_for("ReservationView:confirm_reservation", user_id=reservation.user_id, reservation_id=reservation.id)
+            return client.patch(url, headers=headers)
+
+        def test_예약확정(self, subject, reservation):
+            assert subject.status_code == 201
+            assert reservation.is_confirmed is True
+
+        class Context_admin계정이_수정하려고할_경우:
+            @pytest.fixture
+            def admin_user(self):
+                return UserFactory.create(is_admin=True)
+
+            @pytest.fixture
+            def subject(self, client, headers, reservation, admin_user):
+                url = url_for("ReservationView:confirm_reservation", user_id=admin_user.id, reservation_id=reservation.id)
+                return client.patch(url, headers=headers)
+
+            def test_예약확정(self, subject, reservation):
+                assert subject.status_code == 201
+                assert reservation.is_confirmed is True
+
+        class Context_타계정이_수정하려고_할경우:
+            @pytest.fixture
+            def other_user(self):
+                return UserFactory.create()
+
+            @pytest.fixture
+            def subject(self, client, headers, reservation, other_user):
+                url = url_for("ReservationView:confirm_reservation", user_id=other_user.id, reservation_id=reservation.id)
+                return client.patch(url, headers=headers)
+
+            def test_return_403(self, subject):
+                assert subject.status_code == 403

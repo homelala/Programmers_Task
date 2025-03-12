@@ -34,3 +34,12 @@ class ReservationView(FlaskView):
     @marshal_with(AvailableReservationSchema(many=True), code=200)
     def get_available_schedule(self):
         return ReservationService.get_available_schedule(), 200
+
+
+    @doc(summary="예약 확정")
+    @route("/confirm/<user_id>/<reservation_id>", methods=["PATCH"])
+    @marshal_with(ApiErrorSchema, code=403, description="예약 권한이 없습니다.")
+    @marshal_empty(code=201)
+    def confirm_reservation(self, user_id, reservation_id):
+        ReservationService.confirm_reservation(user_id, reservation_id)
+        return "", 201

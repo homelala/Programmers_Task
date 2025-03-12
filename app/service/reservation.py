@@ -61,3 +61,18 @@ class ReservationService:
         start_datetime = (datetime.utcnow() + timedelta(days=3)).replace(hour=0, minute=0, second=0, microsecond=0)
         date_list = [{"datetime": (start_datetime + timedelta(hours=i)).replace(second=0, microsecond=0), "user_count": 50000, "status": "가능"} for i in range(3 * 24)]
         return date_list
+
+    @classmethod
+    def confirm_reservation(cls, user_id, reservation_id):
+        user = User.query.get(user_id)
+        reservation = Reservation.query.get(reservation_id)
+
+        if user.is_admin:
+            reservation.is_confirmed = True
+            db.session.commit()
+        elif reservation.user_id != user.id:
+            raise ApiError("예약 권한이 없습니다.", status_code=403)
+        else:
+            reservation = Reservation.query.get(reservation_id)
+            reservation.is_confirmed = True
+            db.session.commit()
