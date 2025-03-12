@@ -17,7 +17,9 @@ funcy = "1.18"
 pytest = "5.1.1"
 factory-boy = "3.0.1"
 MarkupSafe = "2.0.1"
-
+flask-swagger-ui = "^4.11.1"
+marshmallow = "3.20.1"
+sqlalchemy = "1.4.54"
 
 [build-system]
 requires = ["poetry-core"]
