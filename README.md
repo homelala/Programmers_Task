@@ -8,7 +8,7 @@
 
 아래와 같이 configuration을 설정한다.
 
-![Image](https://github.com/user-attachments/assets/0c74ad50-4d6b-415a-b070-39b2a41ed756)
+![Image](https://github.com/user-attachments/assets/40c01d53-0b67-4691-9724-7d43ef1fade4)
 
 ## 2. Poetry 설치
 
