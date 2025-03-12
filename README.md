@@ -66,3 +66,5 @@ CREATE ROLE programmers WITH LOGIN PASSWORD 'programmers1234!';
 ```bash
 CREATE DATABASE programmersdb OWNER programmers;
 ```
+# 4. 기타 추가 설정
+**test 및 로컬에서 api를 실행하려고 할 때에는 1번에서 나왔던 brew services start postgresql를 실행시켜야 동작한다**
