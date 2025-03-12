@@ -237,3 +237,87 @@ class Describe_ReservationView:
 
             def test_return_403(self, subject):
                 assert subject.status_code == 403
+
+    class Context_put:
+        @pytest.fixture
+        def reservation(self):
+            return ReservationFactory.create(user_id=UserFactory.create().id, user_count=30000)
+
+        @pytest.fixture
+        def form(self, reservation):
+            return {
+                "user_id": reservation.user_id,
+                "user_count": 40000,
+                "start_datetime": (datetime.utcnow() + timedelta(days=3)).isoformat(),
+                "end_datetime": (datetime.utcnow() + timedelta(days=3, hours=3)).isoformat(),
+            }
+
+        @pytest.fixture
+        def subject(self, test_app, client, headers, form, reservation):
+            url = url_for("ReservationView:put", reservation_id=reservation.id)
+            return client.put(url, data=json.dumps(form), headers=headers)
+
+        def test_예약수정(self, subject, form, reservation):
+            assert subject.status_code == 201
+
+            reservation = Reservation.query.get(reservation.id)
+            assert reservation.user_count == form["user_count"]
+            assert reservation.start_datetime == datetime.fromisoformat(form["start_datetime"])
+            assert reservation.end_datetime == datetime.fromisoformat(form["end_datetime"])
+
+        class Context_이미확정된_예약일_경우:
+            @pytest.fixture
+            def reservation(self):
+                return ReservationFactory.create(user_id=UserFactory.create().id, user_count=30000, is_confirmed=True)
+
+            def test_return_400(self, reservation, subject):
+                assert subject.status_code == 401
+
+        class Context_타계정이_수정할_경우:
+            @pytest.fixture
+            def other_user(self):
+                return UserFactory.create()
+
+            @pytest.fixture
+            def form(self, form, other_user):
+                form.update({"user_id": other_user.id})
+                return form
+
+            @pytest.fixture
+            def subject(self, client, headers, reservation, other_user, form):
+                url = url_for("ReservationView:put", reservation_id=reservation.id)
+                return client.put(url, data=json.dumps(form), headers=headers)
+
+            def test_return_403(self, subject):
+                assert subject.status_code == 403
+
+        class Context_어드민계정이_수정하는_경우:
+            @pytest.fixture
+            def admin_user(self):
+                return UserFactory.create(is_admin=True)
+
+            @pytest.fixture
+            def form(self, form, admin_user):
+                form.update({"user_id": admin_user.id})
+                return form
+
+            @pytest.fixture
+            def subject(self, client, headers, reservation, admin_user, form):
+                url = url_for("ReservationView:put", reservation_id=reservation.id)
+                return client.put(url, data=json.dumps(form), headers=headers)
+
+            def test_예약수정(self, subject, form, reservation):
+                assert subject.status_code == 201
+
+                reservation = Reservation.query.get(reservation.id)
+                assert reservation.user_count == form["user_count"]
+                assert reservation.start_datetime == datetime.fromisoformat(form["start_datetime"])
+                assert reservation.end_datetime == datetime.fromisoformat(form["end_datetime"])
+
+        class Context_인원이찬_시간으로_수정하는_경우:
+            @pytest.fixture
+            def already_reservation(self, form):
+                return ReservationFactory.create(user_id=UserFactory.create().id, user_count=40000, start_datetime=form["start_datetime"], end_datetime = form["end_datetime"], is_confirmed=True)
+
+            def test_return_400(self, already_reservation, subject):
+                assert subject.status_code == 400

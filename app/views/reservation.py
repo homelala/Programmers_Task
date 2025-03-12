@@ -51,3 +51,11 @@ class ReservationView(FlaskView):
     def delete(self, user_id, reservation_id):
         ReservationService.delete_reservation(user_id, reservation_id)
         return "", 200
+
+    @doc(summary="예약 수정")
+    @route("/<reservation_id>", methods=["PUT"])
+    @use_kwargs(ReservationSchema, locations=["json"])
+    @marshal_empty(code=201)
+    def put(self, reservation_id, user_id, user_count, start_datetime, end_datetime):
+        ReservationService.update_reservation(reservation_id, user_id, user_count, start_datetime, end_datetime)
+        return "", 201

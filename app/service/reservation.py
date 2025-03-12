@@ -10,8 +10,8 @@ from app.models.user import User
 
 class ReservationService:
     @classmethod
-    def _check_create_reservation(cls, start_time, end_time):
-        reservation_user_count = Reservation.live_objects(Reservation.start_datetime < end_time, Reservation.end_datetime > start_time, Reservation.is_confirmed == True).with_entities(func.sum(Reservation.user_count)).scalar() or 0
+    def _check_create_reservation(cls, start_datetime, end_datetime):
+        reservation_user_count = Reservation.live_objects(Reservation.start_datetime < end_datetime, Reservation.end_datetime > start_datetime, Reservation.is_confirmed == True).with_entities(func.sum(Reservation.user_count)).scalar() or 0
         return reservation_user_count
 
     @classmethod
@@ -88,11 +88,12 @@ class ReservationService:
 
     @classmethod
     def update_reservation(cls, reservation_id, user_id, user_count, start_datetime, end_datetime):
+        user = User.query.get_or_404(user_id)
         reservation = Reservation.live_objects(Reservation.id == reservation_id).first_or_404()
         if reservation.is_confirmed:
             raise ApiError("예약 확정된 예약은 수정할 수 없습니다.", status_code=401)
 
-        if reservation.user_id == user_id:
+        if user.is_admin or reservation.user_id == user_id:
             if cls._check_create_reservation(start_datetime, end_datetime) + user_count > 50000:
                 raise ApiError("예약 가능 인원이 부족합니다.", status_code=400)
 
