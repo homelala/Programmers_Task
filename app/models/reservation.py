@@ -1,18 +1,22 @@
 from datetime import datetime
 
+from sqlalchemy import Index
+
 from app.database import db
 
 
 class Reservation(db.Model):
-    __tablename__ = 'reservations'
+    __tablename__ = "reservations"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), index=True)
     user_count = db.Column(db.Integer, nullable=False)
     start_datetime = db.Column(db.DateTime, nullable=False)
     end_datetime = db.Column(db.DateTime, nullable=False)
     is_confirmed = db.Column(db.Boolean, default=False)
     deleted_at = db.Column(db.DateTime, nullable=True, default=None)
+
+    __table_args__ = (Index("idx_reservation_time", "start_datetime", "end_datetime", "is_confirmed"),)
 
     def deleted(self):
         self.deleted_at = datetime.utcnow()
