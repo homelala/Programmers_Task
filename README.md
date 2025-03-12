@@ -15,7 +15,7 @@
 1. 우선 poetry를 설치한다
 
 ```bash
-poetry install
+curl -sSL https://install.python-poetry.org | python3 -
 
 # 설치 제대로 됬는지 버전 확인
 poetry --version
