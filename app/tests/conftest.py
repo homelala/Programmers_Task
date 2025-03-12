@@ -1,5 +1,3 @@
-import psycopg2
-import pytest
 from app import create_app
 from app.config import TestConfig
 from app.database import db
