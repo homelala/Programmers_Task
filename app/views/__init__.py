@@ -7,14 +7,17 @@ from app.error import ApiError
 from app.serializers.error import ApiErrorSchema
 from app.views.reservation import ReservationView
 
+
 @marshal_with(ApiErrorSchema())
 def handle_api_error(e: ApiError):
     traceback.print_exc()
     return e, e.status_code
 
+
 @marshal_with(ApiErrorSchema())
 def handle_not_found(e):
     return ApiError(message=e.message, status_code=404), 404
+
 
 def handle_unprocessable_entity(e):
     def make_field_to_str(messages):
@@ -27,7 +30,7 @@ def handle_unprocessable_entity(e):
             if key is None or key == "_schema":
                 return errors[0]
             else:
-                return ("입력 정보가 유효하지 않습니다.")
+                return "입력 정보가 유효하지 않습니다."
 
         first_key, first_key_errors = first(errors.items())
         return find_message(first_key, first_key_errors)
@@ -43,6 +46,7 @@ def handle_unprocessable_entity(e):
 def register_error_handlers(app):
     app.register_error_handler(ApiError, handle_api_error)
     app.register_error_handler(422, handle_unprocessable_entity)
+
 
 def register_api(app):
     ReservationView.register(app, route_base="/reservation", trailing_slash=False)

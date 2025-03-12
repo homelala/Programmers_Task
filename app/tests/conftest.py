@@ -8,11 +8,10 @@ from app.database import db
 import psycopg2
 import pytest
 
+
 @pytest.fixture(scope="session")
 def test_database():
-    conn = psycopg2.connect(
-        dbname="postgres", user="programmers", password="programmers1234!", host="localhost", port="5432"
-    )
+    conn = psycopg2.connect(dbname="postgres", user="programmers", password="programmers1234!", host="localhost", port="5432")
     conn.autocommit = True
     cursor = conn.cursor()
 
@@ -32,9 +31,7 @@ def test_database():
 
     yield "test_db"  # 테스트 실행 동안 유지
 
-    conn = psycopg2.connect(
-        dbname="postgres", user="programmers", password="programmers1234!", host="localhost", port="5432"
-    )
+    conn = psycopg2.connect(dbname="postgres", user="programmers", password="programmers1234!", host="localhost", port="5432")
     conn.autocommit = True
     cursor = conn.cursor()
 
@@ -53,20 +50,17 @@ def test_database():
 
 @pytest.fixture(scope="session")
 def test_app(test_database):
-    """테스트용 Flask 애플리케이션을 생성"""
+    """테스트용 Flask """
     app = create_app()
     app.config.from_object(TestConfig)
 
-    # 테스트 DB 연결 변경
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"postgresql://programmers:programmers1234!@localhost:5432/{test_database}"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://programmers:programmers1234!@localhost:5432/{test_database}"
 
     with app.app_context():
-        db.create_all()  # 테이블 생성
+        db.create_all()
         yield app
         db.session.remove()
-        db.drop_all()  # 테스트 종료 후 정리
+        db.drop_all()
 
 
 @pytest.fixture(scope="function", autouse=True)

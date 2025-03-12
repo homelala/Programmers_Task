@@ -3,8 +3,7 @@ from flask_classful import FlaskView, route
 
 from app.serializers import marshal_empty
 from app.serializers.error import ApiErrorSchema
-from app.serializers.reservation import ReservationSchema, ReservationListSchema, ReservationUserSchema, \
-    AvailableReservationSchema
+from app.serializers.reservation import ReservationSchema, ReservationListSchema, ReservationUserSchema, AvailableReservationSchema
 from app.service.reservation import ReservationService
 
 
@@ -28,13 +27,11 @@ class ReservationView(FlaskView):
         ReservationService.create_reservation(user_id, user_count, start_datetime, end_datetime)
         return "", 200
 
-
     @doc(summary="예약 가능 일정 조회")
     @route("/schedule", methods=["GET"])
     @marshal_with(AvailableReservationSchema(many=True), code=200)
     def get_available_schedule(self):
         return ReservationService.get_available_schedule(), 200
-
 
     @doc(summary="예약 확정")
     @route("/confirm/<user_id>/<reservation_id>", methods=["PATCH"])

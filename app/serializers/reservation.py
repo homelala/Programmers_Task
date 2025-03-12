@@ -33,6 +33,7 @@ class ReservationListSchema(Schema):
     end_datetime = fields.DateTime(description="시험 종료 시간")
     is_confirmed = fields.Bool(description="확정 여부")
 
+
 class ReservationUserSchema(Schema):
     user_id = fields.Integer(description="고객 아이디")
 
