@@ -55,16 +55,32 @@ brew services start postgresql
 brew services stop postgresql
 ```
 
-3. Role 생성 (role과 pw 지켜야함)
+3. psql 접속
+아래 명령어를 입력하면 접속에 성공한다.
+```bash
+psql postgres
+``` 
+
+4. Role 생성 (role과 pw 지켜야함)
 
 ```bash
 CREATE ROLE programmers WITH LOGIN PASSWORD 'programmers1234!';
 ```
 
-4. DB 생성 (이름 및 owner 이름 지켜야함)
+5. DB 생성 (이름 및 owner 이름 지켜야함)
 
 ```bash
 CREATE DATABASE programmersdb OWNER programmers;
 ```
+
+6. 해당 role 및 DB 접속
+```bash
+psql -U programmers -d programmersdb
+
+# 접속 후 아래 명령어를 치면 현재 테이블의 종류 확인 가능
+\l
+```
+
+
 # 4. 기타 추가 설정
 **test 및 로컬에서 api를 실행하려고 할 때에는 1번에서 나왔던 brew services start postgresql를 실행시켜야 동작한다**
