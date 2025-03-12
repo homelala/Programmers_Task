@@ -31,4 +31,4 @@ poetry show
 
 1. cmd + ,를 눌러 Interpreter에서 아래 사진과 같이 의존성이 설치되면 성공
 
-![image.png](%E1%84%80%E1%85%A2%E1%84%87%E1%85%A1%E1%86%AF%E1%84%92%E1%85%AA%E1%86%AB%E1%84%80%E1%85%A7%E1%86%BC%20%E1%84%89%E1%85%A5%E1%86%AF%E1%84%8C%E1%85%A5%E1%86%BC%201b4b4f1e4fdd80038ba3fed41c5d39cd/image%201.png)
+![Image](https://github.com/user-attachments/assets/0c74ad50-4d6b-415a-b070-39b2a41ed756)
