@@ -18,6 +18,8 @@
 
 ![Image](https://github.com/user-attachments/assets/40c01d53-0b67-4691-9724-7d43ef1fade4)
 
+설정이 완료된 후 RUN을 누르면 정상적으로 flask와 init SQL이 실행된다!
+
 ## 📌 2. Poetry 설치
 
 1. 우선 poetry를 설치한다
