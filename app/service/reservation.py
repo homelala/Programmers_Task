@@ -10,13 +10,30 @@ from app.models.user import User
 
 class ReservationService:
     @classmethod
-    def _check_create_reservation(cls, start_datetime, end_datetime):
-        reservation_user_count = Reservation.live_objects(Reservation.start_datetime < end_datetime, Reservation.end_datetime > start_datetime, Reservation.is_confirmed == True).with_entities(func.sum(Reservation.user_count)).scalar() or 0
-        return reservation_user_count
+    def _check_create_reservation(cls, start_datetime, end_datetime, user_count):
+        hour_group_reservation = (
+            db.session.query(
+                func.date_trunc('hour', Reservation.start_datetime).label("hour"),
+                func.sum(Reservation.user_count).label("total_users")
+            )
+            .filter(
+                Reservation.start_datetime < end_datetime,
+                Reservation.end_datetime > start_datetime,
+                Reservation.is_confirmed == True
+            )
+            .group_by(func.date_trunc('hour', Reservation.start_datetime))
+            .order_by("hour")
+        ).all()
+
+        for res in hour_group_reservation:
+            if res.total_users + user_count > 50000:
+                return False
+
+        return True
 
     @classmethod
     def create_reservation(cls, user_id, user_count, start_datetime, end_datetime):
-        if cls._check_create_reservation(start_datetime, end_datetime) + user_count > 50000:
+        if not cls._check_create_reservation(start_datetime, end_datetime, user_count):
             raise ApiError("예약 가능 인원이 부족합니다.", status_code=400)
 
         reservation = Reservation(user_id=user_id, user_count=user_count, start_datetime=start_datetime, end_datetime=end_datetime)
@@ -94,7 +111,7 @@ class ReservationService:
             raise ApiError("예약 확정된 예약은 수정할 수 없습니다.", status_code=401)
 
         if user.is_admin or reservation.user_id == user_id:
-            if cls._check_create_reservation(start_datetime, end_datetime) + user_count > 50000:
+            if not cls._check_create_reservation(start_datetime, end_datetime, user_count):
                 raise ApiError("예약 가능 인원이 부족합니다.", status_code=400)
 
             reservation.user_count = user_count
