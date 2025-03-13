@@ -10,6 +10,11 @@
 ### 📌 1. 실행 configuration 설정
 
 아래와 같이 configuration을 설정한다. (port 번호는 자유롭게 설정해도 된다, dir path 수정 필요!)
+- + 버튼 선택 후 Flask 서버 선택
+- **가상 환경 인터프리터 설정 혹은 생성 후 선택** (선택을 미리 해야 선택해둔 인터프리터에 의존성이 설치됨)
+- module 변경 후 app 추가
+- Modity options에서 additional options 체크 후 port 번호 설정
+- dir 설정
 
 ![Image](https://github.com/user-attachments/assets/40c01d53-0b67-4691-9724-7d43ef1fade4)
 
