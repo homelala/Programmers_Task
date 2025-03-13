@@ -2,7 +2,8 @@ import copy
 from typing import Optional
 
 from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin as BaseMarshmallowPlugin, SchemaResolver as BaseSchemaResolver
+from apispec.ext.marshmallow import MarshmallowPlugin as BaseMarshmallowPlugin, OpenAPIConverter as BaseOpenAPIConverter, SchemaResolver as BaseSchemaResolver
+
 from flask import current_app
 from flask_apispec import marshal_with
 from flask_apispec.apidoc import Converter as BaseApiDocConverter
@@ -20,6 +21,29 @@ def _get_app_name(endpoint: str) -> Optional[str]:
 def _get_cache_key(*args, **kwargs):
     return kwargs["app_name"]
 
+class OpenAPIConverter(BaseOpenAPIConverter):
+    def schema2parameters(self, schema, *, default_in="body", name="body", required=False, description=None):
+        from apispec.ext.marshmallow.openapi import __location_map__
+
+        openapi_default_in = __location_map__.get(default_in, default_in)
+
+        if default_in == "body":
+            prop = self.resolve_nested_schema(schema)
+            param = {
+                "in": openapi_default_in,
+                "required": required,
+                "name": name,
+                "schema": prop,
+            }
+            if description:
+                param["description"] = description
+            return [param]
+        else:
+            from apispec.ext.marshmallow.common import get_fields
+
+            fields = get_fields(schema, exclude_dump_only=True)
+            return self.fields2parameters(fields, default_in=default_in)
+
 
 class ApiDocConverter(BaseApiDocConverter):
     def get_operation(self, rule, view, parent=None):
@@ -36,9 +60,6 @@ class ApiDocConverter(BaseApiDocConverter):
             operation["requestBody"] = request_body
         docs.pop("params", None)
         return merge_recursive([operation, docs])
-
-    def get_responses(self, view, parent=None):
-        return super().get_responses(view, parent)
 
     def _resolve_converter(self, schema):
         from marshmallow.utils import is_instance_or_subclass
@@ -103,28 +124,6 @@ class ApiDocConverter(BaseApiDocConverter):
         parameters = super().get_parameters(rule, view, docs)
         return [parameter for parameter in parameters if parameter["in"] != "body"]
 
-    def schema2parameters(self, schema, *, default_in="body", name="body", required=False, description=None):
-        from apispec.ext.marshmallow.openapi import __location_map__
-
-        openapi_default_in = __location_map__.get(default_in, default_in)
-
-        if default_in == "body":
-            prop = self.resolve_nested_schema(schema)
-            param = {
-                "in": openapi_default_in,
-                "required": required,
-                "name": name,
-                "schema": prop,
-            }
-            if description:
-                param["description"] = description
-            return [param]
-        else:
-            from apispec.ext.marshmallow.common import get_fields
-
-            fields = get_fields(schema, exclude_dump_only=True)
-            return self.fields2parameters(fields, default_in=default_in)
-
 
 class SchemaResolver(BaseSchemaResolver):
     def resolve_response(self, response):
@@ -153,6 +152,7 @@ class SchemaResolver(BaseSchemaResolver):
 
 
 class MarshmallowPlugin(BaseMarshmallowPlugin):
+    Converter = OpenAPIConverter
     Resolver = SchemaResolver
 
 
