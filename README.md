@@ -1,7 +1,7 @@
 # 🔥Programmers_Task🔥
 # 📃 API 문서
-local 실행 후 localhost:port/swagger/ 접속하면 확인 가능
-
+1. local 실행 후 localhost:port/swagger/ 접속하면 확인 가능
+2. [API 명세서](https://pinto-pike-1e8.notion.site/f8ac722b8c5e41879fdf7e9b0ca776d8?v=c9b2ca0ff7624918a080d54feb436258&pvs=74) swagger 외 Notion Page
 
 # ⚙️ 개발환경 설정
 
