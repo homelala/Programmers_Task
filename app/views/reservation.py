@@ -43,6 +43,7 @@ class ReservationView(FlaskView):
 
     @doc(summary="예약 삭제")
     @route("/<user_id>/<reservation_id>", methods=["DELETE"])
+    @marshal_with(ApiErrorSchema, code=403, description="예약 삭제 권한이 없습니다.")
     @marshal_with(ApiErrorSchema, code=401, description="예약 확정된 예약은 삭제할 수 없습니다.")
     @marshal_empty(code=200)
     def delete(self, user_id, reservation_id):
@@ -54,7 +55,7 @@ class ReservationView(FlaskView):
     @use_kwargs(ReservationSchema, locations=["json"])
     @marshal_with(ApiErrorSchema, code=401, description="예약 확정된 예약은 삭제할 수 없습니다.")
     @marshal_with(ApiErrorSchema, code=400, description="예약 가능 인원이 부족합니다.")
-    @marshal_with(ApiErrorSchema, code=403, description="예약 권한이 없습니다.")
+    @marshal_with(ApiErrorSchema, code=403, description="예약 수정 권한이 없습니다.")
     @marshal_with(ApiErrorSchema, code=422, description="입력 정보가 유효하지 않습니다.")
     @marshal_empty(code=201)
     def put(self, reservation_id, user_id, user_count, start_datetime, end_datetime):
