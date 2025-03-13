@@ -21,7 +21,6 @@ flask-swagger-ui = "^4.11.1"
 marshmallow = "3.20.1"
 sqlalchemy = "1.4.54"
 apispec = "^3.3.2"
-werkzeug = "=0.16.1"
 
 [build-system]
 requires = ["poetry-core"]
